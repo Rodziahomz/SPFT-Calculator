@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SPFT Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    h1 { color: #005691; }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 100%; padding: 8px; margin-top: 5px; }
+    .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+    .pass { background-color: #d4edda; color: #155724; }
+    .fail { background-color: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <h1>SPFT Calculator</h1>
+
+  <label for="age">Age:</label>
+  <input type="number" id="age" min="45" required>
+
+  <label for="gender">Gender:</label>
+  <select id="gender">
+    <option value="Male">Male</option>
+    <option value="Female">Female</option>
+  </select>
+
+  <label for="weight">Weight (kg):</label>
+  <input type="number" id="weight" required>
+
+  <label for="workRate">Work Rate:</label>
+  <select id="workRate">
+    <option value="75">75</option>
+    <option value="100">100</option>
+    <option value="125">125</option>
+    <option value="150">150</option>
+  </select>
+
+  <label for="heartRate">Heart Rate:</label>
+  <input type="number" id="heartRate" required>
+
+  <button onclick="calculateSPFT()">Calculate</button>
+
+  <div id="result" class="result"></div>
+
+  <script>
+    const vo2TableMale = {
+      130: {75: 2.5, 100: 3.0, 125: 3.6, 150: 4.1},
+      131: {75: 2.4, 100: 2.9, 125: 3.5, 150: 4.0},
+      132: {75: 2.4, 100: 2.9, 125: 3.5, 150: 4.0},
+      133: {75: 2.3, 100: 2.8, 125: 3.4, 150: 3.9},
+      134: {75: 2.3, 100: 2.8, 125: 3.4, 150: 3.9},
+      135: {75: 2.3, 100: 2.8, 125: 3.3, 150: 3.8}
+    };
+
+    const vo2TableFemale = {
+      130: {75: 2.7, 100: 3.4, 125: 4.0, 150: 4.7},
+      131: {75: 2.7, 100: 3.4, 125: 4.0, 150: 4.6},
+      132: {75: 2.7, 100: 3.3, 125: 3.9, 150: 4.5},
+      133: {75: 2.6, 100: 3.2, 125: 3.8, 150: 4.4},
+      134: {75: 2.6, 100: 3.2, 125: 3.8, 150: 4.4},
+      135: {75: 2.6, 100: 3.1, 125: 3.7, 150: 4.3}
+    };
+
+    function getGrade(gender, age, vo2) {
+      if (gender === 'Male') {
+        if (vo2 > 41) return "Excellent";
+        if (vo2 > 39.1) return "Very Good";
+        if (vo2 > 37.1) return "Good";
+        if (vo2 > 33.1) return "Below Average";
+        return "Poor";
+      } else {
+        if (vo2 > 30) return "Excellent";
+        if (vo2 > 28.1) return "Very Good";
+        if (vo2 > 26.1) return "Good";
+        if (vo2 > 23.1) return "Below Average";
+        return "Poor";
+      }
+    }
+
+    function calculateSPFT() {
+      const age = parseInt(document.getElementById('age').value);
+      const gender = document.getElementById('gender').value;
+      const weight = parseFloat(document.getElementById('weight').value);
+      const workRate = parseInt(document.getElementById('workRate').value);
+      const heartRate = parseInt(document.getElementById('heartRate').value);
+
+      const vo2L = (gender === 'Male' ? vo2TableMale : vo2TableFemale)[heartRate]?.[workRate];
+
+      if (!vo2L) {
+        document.getElementById('result').innerHTML = '<p class="fail">Heart Rate/Work Rate not found in table.</p>';
+        return;
+      }
+
+      const vo2mlkg = (vo2L * 1000 / weight).toFixed(2);
+      const grade = getGrade(gender, age, vo2mlkg);
+      const passed = ["Excellent", "Very Good", "Good"].includes(grade);
+
+      document.getElementById('result').className = 'result ' + (passed ? 'pass' : 'fail');
+      document.getElementById('result').innerHTML = `
+        <strong>VO2 Max:</strong> ${vo2L} L/min<br>
+        <strong>VO2 Max (ml/kg/min):</strong> ${vo2mlkg}<br>
+        <strong>Fitness Grade:</strong> ${grade}<br>
+        <strong>Result:</strong> ${passed ? 'Pass' : 'Fail'}
+      `;
+    }
+  </script>
+</body>
+</html>
